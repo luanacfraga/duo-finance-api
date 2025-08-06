@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: duo-finance-api
+    environment:
+      DATABASE_URL: postgresql://lufraga:182077@duo-finance-pg:5432/duo-finance-db
+      NODE_ENV: development
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run start:dev
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15
+    container_name: duo-finance-pg
+    environment:
+      POSTGRES_USER: lufraga
+      POSTGRES_PASSWORD: 182077
+      POSTGRES_DB: duo-finance-db
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
