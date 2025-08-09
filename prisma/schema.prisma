@@ -22,5 +22,94 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  categories            Category[]
+  recurringTransactions RecurringTransaction[]
+  transactions          Transaction[]
+  budgets               Budget[]
+  alerts                Alert[]
+
   @@map("users")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  type      String
+  createdAt DateTime @default(now())
+
+  user                  User                   @relation(fields: [userId], references: [id])
+  recurringTransactions RecurringTransaction[]
+  transactions          Transaction[]
+  budgets               Budget[]
+
+  @@map("categories")
+}
+
+model RecurringTransaction {
+  id             String    @id @default(uuid())
+  userId         String
+  categoryId     String
+  name           String
+  amount         Decimal
+  recurrenceRule String
+  defaultAmount  Decimal
+  lastValues     Decimal[]
+  nextOccurrence DateTime
+  createdAt      DateTime  @default(now())
+
+  user         User          @relation(fields: [userId], references: [id])
+  category     Category      @relation(fields: [categoryId], references: [id])
+  transactions Transaction[]
+
+  @@map("recurring_transactions")
+}
+
+model Transaction {
+  id              String   @id @default(uuid())
+  userId          String
+  recurringId     String
+  categoryId      String
+  name            String
+  amount          Decimal
+  status          String
+  transactionDate DateTime
+  createdAt       DateTime @default(now())
+
+  user      User                 @relation(fields: [userId], references: [id])
+  recurring RecurringTransaction @relation(fields: [recurringId], references: [id])
+  category  Category             @relation(fields: [categoryId], references: [id])
+
+  @@map("transactions")
+}
+
+model Budget {
+  id               String   @id @default(uuid())
+  userId           String
+  categoryId       String
+  limitType        String
+  limitValue       Decimal
+  month            DateTime
+  carryoverEnabled Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+  alerts   Alert[]
+
+  @@map("budgets")
+}
+
+model Alert {
+  id          String   @id @default(uuid())
+  userId      String
+  budgetId    String
+  triggeredAt DateTime @default(now())
+  message     String
+  read        Boolean  @default(false)
+
+  user   User   @relation(fields: [userId], references: [id])
+  budget Budget @relation(fields: [budgetId], references: [id])
+
+  @@map("alerts")
 }
